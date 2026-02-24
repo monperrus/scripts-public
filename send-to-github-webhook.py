@@ -20,6 +20,7 @@ def main():
     parser.add_argument('sha', help='The commit SHA to send.')
     parser.add_argument('--event', default='push', help='The GitHub event type (default: push).')
     parser.add_argument('--ref', default='refs/heads/main', help='The git ref (default: refs/heads/main).')
+    parser.add_argument('--secret', help='Webhook secret for X-Hub-Signature-256 header.')
     
     args = parser.parse_args()
 
@@ -154,9 +155,17 @@ def main():
         'User-Agent': 'GitHub-Hookshot/1234567'
     }
 
+    # Compute X-Hub-Signature-256 if secret is provided
+    data = json.dumps(payload).encode('utf-8')
+    if args.secret:
+        import hmac
+        import hashlib
+        signature = hmac.new(args.secret.encode('utf-8'), data, hashlib.sha256).hexdigest()
+        headers['X-Hub-Signature-256'] = f"sha256={signature}"
+
     print(f"Sending payload for commit {args.sha} to {args.url}...")
     try:
-        response = requests.post(args.url, json=payload, headers=headers)
+        response = requests.post(args.url, data=data, headers=headers)
         print(f"Response status code: {response.status_code}")
         print(f"Response body: {response.text}")
     except requests.exceptions.RequestException as e:
