@@ -166,6 +166,7 @@ def main():
     print(f"Sending payload for commit {args.sha} to {args.url}...")
     try:
         response = requests.post(args.url, data=data, headers=headers)
+        response.raise_for_status()
         print(f"Response status code: {response.status_code}")
         print(f"Response body: {response.text}")
     except requests.exceptions.RequestException as e:
