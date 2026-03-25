@@ -170,7 +170,10 @@ def main():
         print(f"Response status code: {response.status_code}")
         print(f"Response body: {response.text}")
     except requests.exceptions.RequestException as e:
-        print(f"Error: {e}")
+        import traceback
+        traceback.print_exc()
+        if e.response is not None:
+            print(f"Response body: {e.response.text}")
         sys.exit(1)
 
 if __name__ == "__main__":
